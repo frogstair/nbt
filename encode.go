@@ -9,7 +9,6 @@ import (
 )
 
 // Encode encodes a given value into its corresponding nbt representation
-// Maps and structs are interpreted as compounds
 func Encode(v interface{}, name string) []byte {
 	var b bytes.Buffer
 
@@ -23,6 +22,8 @@ func Encode(v interface{}, name string) []byte {
 	return b.Bytes()
 }
 
+// EncodeCompress encodes a given value into its corresponding nbt representation
+// and used gzip compression on it afterwards
 func EncodeCompress(v interface{}, name string) []byte {
 	var b bytes.Buffer
 
