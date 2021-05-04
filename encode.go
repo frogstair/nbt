@@ -42,7 +42,7 @@ func EncodeCompress(v interface{}, name string) []byte {
 	return bc.Bytes()
 }
 
-func writeMap(b *bytes.Buffer, v map[string]interface{}, name string) {
+func writeMap(b *bytes.Buffer, v map[string]interface{}, name string) error {
 
 	b.WriteByte(tagCompound)
 	if name == "" {
@@ -52,10 +52,14 @@ func writeMap(b *bytes.Buffer, v map[string]interface{}, name string) {
 	}
 
 	for k, el := range v {
-		writeType(b, el, k)
+		err := writeType(b, el, k)
+		if err != nil {
+			return err
+		}
 	}
 
 	b.WriteByte(tagEnd)
+	return nil
 }
 
 func writeByte(b *bytes.Buffer, s byte, name string) {
@@ -163,7 +167,7 @@ func writeName(b *bytes.Buffer, s string) error {
 	return nil
 }
 
-func writeType(b *bytes.Buffer, el interface{}, name string) {
+func writeType(b *bytes.Buffer, el interface{}, name string) error {
 	t := getType(el)
 	switch t {
 	case tagByte:
@@ -193,6 +197,7 @@ func writeType(b *bytes.Buffer, el interface{}, name string) {
 	case tagCompound:
 		writeMap(b, el.(map[string]interface{}), name)
 	default:
-		panic(fmt.Errorf("invalid type supplied %T", el))
+		return fmt.Errorf("invalid type supplied %T", el)
 	}
+	return nil
 }
