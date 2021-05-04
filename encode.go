@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/binary"
+	"fmt"
 	"reflect"
 )
 
@@ -191,6 +192,6 @@ func writeType(b *bytes.Buffer, el interface{}, name string) {
 	case TagCompound:
 		writeMap(b, el.(map[string]interface{}), name)
 	default:
-		panic("invalid type supplied")
+		panic(fmt.Errorf("invalid type supplied %T", el))
 	}
 }
