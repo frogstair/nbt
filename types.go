@@ -3,45 +3,45 @@ package nbt
 import "reflect"
 
 const (
-	TagEnd       = 0
-	TagByte      = 1
-	TagShort     = 2
-	TagInt       = 3
-	TagLong      = 4
-	TagFloat     = 5
-	TagDouble    = 6
-	TagByteArray = 7
-	TagString    = 8
-	TagList      = 9
-	TagCompound  = 10
+	tagEnd       = 0
+	tagByte      = 1
+	tagShort     = 2
+	tagInt       = 3
+	tagLong      = 4
+	tagFloat     = 5
+	tagDouble    = 6
+	tagByteArray = 7
+	tagString    = 8
+	tagList      = 9
+	tagCompound  = 10
 )
 
 func getType(v interface{}) byte {
 	switch v := v.(type) {
 	case byte:
-		return TagByte
+		return tagByte
 	case int16:
-		return TagShort
+		return tagShort
 	case int32:
-		return TagInt
+		return tagInt
 	case int64:
-		return TagLong
+		return tagLong
 	case float32:
-		return TagFloat
+		return tagFloat
 	case float64:
-		return TagDouble
+		return tagDouble
 	case []byte:
-		return TagByteArray
+		return tagByteArray
 	case string:
-		return TagString
+		return tagString
 	case map[string]interface{}:
-		return TagCompound
+		return tagCompound
 	default:
 		val := reflect.TypeOf(v)
 		if val.Kind() == reflect.Slice {
-			return TagList
+			return tagList
 		} else {
-			return TagEnd
+			return tagEnd
 		}
 	}
 }

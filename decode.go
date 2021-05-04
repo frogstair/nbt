@@ -12,7 +12,36 @@ import (
 
 var errSyntax = fmt.Errorf("invalid byte sequence")
 
-func DecodeFileStream(r io.Reader, v interface{}) error {
+func DecodeBytes(data []byte, v interface{}) (err error) {
+	b := bufio.NewReader(bytes.NewBuffer(data))
+
+	m, ok := v.(*map[string]interface{})
+	if ok {
+		var mp interface{}
+		_, mp, _, err = readNamedNext(b)
+		(*m) = mp.(map[string]interface{})
+	} else {
+		panic("Cannot decode struct, not implemented")
+	}
+
+	return err
+}
+
+func DecodeCompressedBytes(data []byte, v interface{}) (err error) {
+	gr, err := gzip.NewReader(bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
+	defer gr.Close()
+	data, err = ioutil.ReadAll(gr)
+	if err != nil {
+		return err
+	}
+
+	return DecodeBytes(data, v)
+}
+
+func DecodeStream(r io.Reader, v interface{}) error {
 	b := bufio.NewReader(r)
 
 	var err error
@@ -28,7 +57,7 @@ func DecodeFileStream(r io.Reader, v interface{}) error {
 	return err
 }
 
-func DecodeCompressedFileStream(r io.Reader, v interface{}) error {
+func DecodeCompressedStream(r io.Reader, v interface{}) error {
 
 	gr, err := gzip.NewReader(r)
 	if err != nil {
@@ -40,18 +69,7 @@ func DecodeCompressedFileStream(r io.Reader, v interface{}) error {
 		return err
 	}
 
-	b := bufio.NewReader(bytes.NewBuffer(data))
-
-	m, ok := v.(*map[string]interface{})
-	if ok {
-		var mp interface{}
-		_, mp, _, err = readNamedNext(b)
-		(*m) = mp.(map[string]interface{})
-	} else {
-		panic("Cannot decode struct, not implemented")
-	}
-
-	return err
+	return DecodeBytes(data, v)
 }
 
 func readMap(r *bufio.Reader) (map[string]interface{}, error) {
@@ -63,7 +81,7 @@ func readMap(r *bufio.Reader) (map[string]interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		if typ == TagEnd {
+		if typ == tagEnd {
 			return m, nil
 		}
 		m[n] = val
@@ -175,25 +193,25 @@ func readNamedNext(r *bufio.Reader) (name string, v interface{}, t byte, err err
 
 func readUnnamedNext(r *bufio.Reader, t byte) (v interface{}, err error) {
 	switch t {
-	case TagByte:
+	case tagByte:
 		v, err = readByte(r)
-	case TagShort:
+	case tagShort:
 		v, err = readShort(r)
-	case TagInt:
+	case tagInt:
 		v, err = readInt(r)
-	case TagLong:
+	case tagLong:
 		v, err = readLong(r)
-	case TagFloat:
+	case tagFloat:
 		v, err = readFloat(r)
-	case TagDouble:
+	case tagDouble:
 		v, err = readDouble(r)
-	case TagByteArray:
+	case tagByteArray:
 		v, err = readByteArray(r)
-	case TagString:
+	case tagString:
 		v, err = readString(r)
-	case TagList:
+	case tagList:
 		v, err = readList(r)
-	case TagCompound:
+	case tagCompound:
 		v, err = readMap(r)
 	}
 

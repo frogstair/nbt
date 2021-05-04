@@ -44,7 +44,7 @@ func EncodeCompress(v interface{}, name string) []byte {
 
 func writeMap(b *bytes.Buffer, v map[string]interface{}, name string) {
 
-	b.WriteByte(TagCompound)
+	b.WriteByte(tagCompound)
 	if name == "" {
 		b.Write([]byte{0, 0})
 	} else {
@@ -55,47 +55,47 @@ func writeMap(b *bytes.Buffer, v map[string]interface{}, name string) {
 		writeType(b, el, k)
 	}
 
-	b.WriteByte(TagEnd)
+	b.WriteByte(tagEnd)
 }
 
 func writeByte(b *bytes.Buffer, s byte, name string) {
-	b.WriteByte(TagByte)
+	b.WriteByte(tagByte)
 	writeName(b, name)
 	b.WriteByte(s)
 }
 
 func writeShort(b *bytes.Buffer, s int16, name string) {
-	b.WriteByte(TagShort)
+	b.WriteByte(tagShort)
 	writeName(b, name)
 	binary.Write(b, binary.BigEndian, s)
 }
 
 func writeInt(b *bytes.Buffer, s int32, name string) {
-	b.WriteByte(TagInt)
+	b.WriteByte(tagInt)
 	writeName(b, name)
 	binary.Write(b, binary.BigEndian, s)
 }
 
 func writeLong(b *bytes.Buffer, s int64, name string) {
-	b.WriteByte(TagLong)
+	b.WriteByte(tagLong)
 	writeName(b, name)
 	binary.Write(b, binary.BigEndian, s)
 }
 
 func writeFloat(b *bytes.Buffer, s float32, name string) {
-	b.WriteByte(TagFloat)
+	b.WriteByte(tagFloat)
 	writeName(b, name)
 	binary.Write(b, binary.BigEndian, s)
 }
 
 func writeDouble(b *bytes.Buffer, s float64, name string) {
-	b.WriteByte(TagDouble)
+	b.WriteByte(tagDouble)
 	writeName(b, name)
 	binary.Write(b, binary.BigEndian, s)
 }
 
 func writeByteArray(b *bytes.Buffer, s []byte, name string) {
-	b.WriteByte(TagByteArray)
+	b.WriteByte(tagByteArray)
 	writeName(b, name)
 
 	l := len(s)
@@ -104,7 +104,7 @@ func writeByteArray(b *bytes.Buffer, s []byte, name string) {
 }
 
 func writeString(b *bytes.Buffer, s string, name string) {
-	b.WriteByte(TagString)
+	b.WriteByte(tagString)
 	writeName(b, name)
 	writeName(b, s)
 }
@@ -122,20 +122,20 @@ func writeList(b *bytes.Buffer, s []interface{}, name string) {
 	binary.Write(b, binary.BigEndian, int32(len(s)))
 
 	for _, el := range s {
-		if t == TagString {
+		if t == tagString {
 			writeName(b, el.(string))
-		} else if t == TagByteArray {
+		} else if t == tagByteArray {
 			e := el.([]byte)
 			l := len(e)
 			binary.Write(b, binary.BigEndian, int32(l))
 			binary.Write(b, binary.BigEndian, e)
-		} else if t == TagCompound {
+		} else if t == tagCompound {
 			e := el.(map[string]interface{})
 			for k, el := range e {
 				writeType(b, el, k)
 			}
-			b.WriteByte(TagEnd)
-		} else if t == TagList {
+			b.WriteByte(tagEnd)
+		} else if t == tagList {
 			e := reflect.ValueOf(el)
 			arr := make([]interface{}, e.Len())
 			for i := 0; i < e.Len(); i++ {
@@ -166,31 +166,31 @@ func writeName(b *bytes.Buffer, s string) error {
 func writeType(b *bytes.Buffer, el interface{}, name string) {
 	t := getType(el)
 	switch t {
-	case TagByte:
+	case tagByte:
 		writeByte(b, el.(byte), name)
-	case TagShort:
+	case tagShort:
 		writeShort(b, el.(int16), name)
-	case TagInt:
+	case tagInt:
 		writeInt(b, el.(int32), name)
-	case TagLong:
+	case tagLong:
 		writeLong(b, el.(int64), name)
-	case TagFloat:
+	case tagFloat:
 		writeFloat(b, el.(float32), name)
-	case TagDouble:
+	case tagDouble:
 		writeDouble(b, el.(float64), name)
-	case TagByteArray:
+	case tagByteArray:
 		writeByteArray(b, el.([]byte), name)
-	case TagString:
+	case tagString:
 		writeString(b, el.(string), name)
-	case TagList:
-		b.WriteByte(TagList)
+	case tagList:
+		b.WriteByte(tagList)
 		s := reflect.ValueOf(el)
 		arr := make([]interface{}, s.Len())
 		for i := 0; i < s.Len(); i++ {
 			arr[i] = s.Index(i).Interface()
 		}
 		writeList(b, arr, name)
-	case TagCompound:
+	case tagCompound:
 		writeMap(b, el.(map[string]interface{}), name)
 	default:
 		panic(fmt.Errorf("invalid type supplied %T", el))
