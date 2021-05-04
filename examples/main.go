@@ -34,6 +34,7 @@ func main() {
 			},
 		},
 		"empty": []int64{},
+		// No need to specify type here, because go will force every number to be an int64
 		"listTest (long)": []int64{
 			11,
 			12,
@@ -41,11 +42,13 @@ func main() {
 			14,
 			15,
 		},
-		"byteTest":   byte(127),
-		"shortTest":  int16(32767),
-		"intTest":    int32(2147483647),
-		"longTest":   int64(9223372036854775807),
-		"byteArr":    []byte{1, 2, 3, 4, 5}, // Will be printed as base64 encoded because thats how JSON works
+		"byteTest":  byte(127),
+		"shortTest": int16(32767),
+		"intTest":   int32(2147483647),
+		"longTest":  int64(9223372036854775807),
+		// Will be printed as base64 encoded because thats how JSON works
+		"byteArr": []byte{1, 2, 3, 4, 5},
+		// Support for unicode
 		"stringTest": "HELLO WORLD THIS IS A TEST STRING! こんにちは世界〜",
 	}
 
@@ -59,7 +62,7 @@ func main() {
 	// Make an empty container
 	m := make(map[string]interface{})
 
-	// Decode compressed file stream
+	// Decode compressed file stream. Any reader that contains the NBT data works
 	err := nbt.DecodeCompressedStream(f, &m)
 	if err != nil {
 		panic(err)
