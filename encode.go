@@ -2,6 +2,7 @@ package nbt
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/binary"
 	"reflect"
 )
@@ -21,8 +22,22 @@ func Encode(v interface{}, name string) []byte {
 	return b.Bytes()
 }
 
-func EncodeCompress(v interface{}) {
+func EncodeCompress(v interface{}, name string) []byte {
+	var b bytes.Buffer
 
+	m, ok := v.(map[string]interface{})
+	if ok {
+		writeMap(&b, m, name)
+	} else {
+		panic("Cannot decode struct, not implemented")
+	}
+
+	var bc bytes.Buffer
+	gz := gzip.NewWriter(&bc)
+	gz.Write(b.Bytes())
+	gz.Close()
+
+	return bc.Bytes()
 }
 
 func writeMap(b *bytes.Buffer, v map[string]interface{}, name string) {
