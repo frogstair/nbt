@@ -12,25 +12,25 @@ import (
 func main() {
 
 	// Sample data to work with
-	data := map[string]interface{}{
-		"nested": map[string]interface{}{
-			"egg": map[string]interface{}{
+	data := nbt.C{
+		"nested": nbt.C{
+			"egg": nbt.C{
 				"name":  "Eggbert",
 				"value": 0.5,
 			},
-			"ham": map[string]interface{}{
+			"ham": nbt.C{
 				"name":  "Hambert",
 				"value": 0.75,
 			},
 		},
-		"listTest (compound)": []map[string]interface{}{
+		"listTest (compound)": []nbt.C{
 			{
 				"createdOn": int64(1264099775885),
-				"name":      "Compound Tag #0",
+				"name":      "nbt.Compound Tag #0",
 			},
 			{
 				"createdOn": int64(1264099775885),
-				"name":      "Compound Tag #1",
+				"name":      "nbt.Compound Tag #1",
 			},
 		},
 		"empty": []int64{},
@@ -60,7 +60,7 @@ func main() {
 	// Open the file with the data
 	f, _ := os.Open("bigtest.nbt")
 	// Make an empty container
-	m := make(map[string]interface{})
+	m := make(nbt.C)
 
 	// Decode compressed file stream. Any reader that contains the NBT data works
 	err := nbt.DecodeCompressedStream(f, &m)
@@ -70,5 +70,5 @@ func main() {
 
 	// Pretty print the map using JSON
 	t, _ := json.MarshalIndent(m, "", "  ")
-	fmt.Print(string(t))
+	fmt.Print(string(t), "\n")
 }

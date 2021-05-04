@@ -16,6 +16,9 @@ const (
 	tagCompound  = 10
 )
 
+// C is a wrapper for map[string]interface{}
+type C map[string]interface{}
+
 func getType(v interface{}) byte {
 	switch v := v.(type) {
 	case byte:
@@ -34,7 +37,7 @@ func getType(v interface{}) byte {
 		return tagByteArray
 	case string:
 		return tagString
-	case map[string]interface{}:
+	case C:
 		return tagCompound
 	default:
 		val := reflect.TypeOf(v)

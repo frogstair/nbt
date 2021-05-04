@@ -12,7 +12,7 @@ import (
 func Encode(v interface{}, name string) []byte {
 	var b bytes.Buffer
 
-	m, ok := v.(map[string]interface{})
+	m, ok := v.(C)
 	if ok {
 		writeMap(&b, m, name)
 	} else {
@@ -27,7 +27,7 @@ func Encode(v interface{}, name string) []byte {
 func EncodeCompress(v interface{}, name string) []byte {
 	var b bytes.Buffer
 
-	m, ok := v.(map[string]interface{})
+	m, ok := v.(C)
 	if ok {
 		writeMap(&b, m, name)
 	} else {
@@ -42,7 +42,7 @@ func EncodeCompress(v interface{}, name string) []byte {
 	return bc.Bytes()
 }
 
-func writeMap(b *bytes.Buffer, v map[string]interface{}, name string) error {
+func writeMap(b *bytes.Buffer, v C, name string) error {
 
 	b.WriteByte(tagCompound)
 	if name == "" {
@@ -134,7 +134,7 @@ func writeList(b *bytes.Buffer, s []interface{}, name string) {
 			binary.Write(b, binary.BigEndian, int32(l))
 			binary.Write(b, binary.BigEndian, e)
 		} else if t == tagCompound {
-			e := el.(map[string]interface{})
+			e := el.(C)
 			for k, el := range e {
 				writeType(b, el, k)
 			}
@@ -195,7 +195,7 @@ func writeType(b *bytes.Buffer, el interface{}, name string) error {
 		}
 		writeList(b, arr, name)
 	case tagCompound:
-		writeMap(b, el.(map[string]interface{}), name)
+		writeMap(b, el.(C), name)
 	default:
 		return fmt.Errorf("invalid type supplied %T", el)
 	}

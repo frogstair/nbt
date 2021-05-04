@@ -18,6 +18,8 @@ For now it can only encode/decode tags whose root node is a **composite**, other
 
 It is necessary to explicitly specify a type for each **numerical value** because of how NBT works.
 
+Only nbt.C works to convert maps to compund tags. A fix should come soon, however
+
 ## Example
 
 ```go
@@ -35,18 +37,18 @@ import (
 func main() {
 
     // Sample data to work with
-    data := map[string]interface{}{
-        "nested": map[string]interface{}{
-            "egg": map[string]interface{}{
+    data := C{
+        "nested": C{
+            "egg": C{
                 "name":  "Eggbert",
                 "value": 0.5,
             },
-            "ham": map[string]interface{}{
+            "ham": C{
                 "name":  "Hambert",
                 "value": 0.75,
             },
         },
-        "listTest (compound)": []map[string]interface{}{
+        "listTest (compound)": []C{
             {
                 "createdOn": int64(1264099775885),
                 "name":      "Compound Tag #0",
@@ -83,7 +85,7 @@ func main() {
     // Open the file with the data
     f, _ := os.Open("bigtest.nbt")
     // Make an empty container
-    m := make(map[string]interface{})
+    m := make(C)
 
     // Decode compressed file stream. Any reader that contains the NBT data works
     err := nbt.DecodeCompressedStream(f, &m)
