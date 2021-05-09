@@ -39,6 +39,8 @@ func getType(v interface{}) byte {
 		return tagString
 	case C:
 		return tagCompound
+	case map[string]interface{}:
+		return tagCompound
 	default:
 		val := reflect.TypeOf(v)
 		if val.Kind() == reflect.Slice {

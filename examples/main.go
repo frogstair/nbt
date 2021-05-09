@@ -12,7 +12,7 @@ import (
 func main() {
 
 	// Sample data to work with
-	data := nbt.C{
+	data := map[string]interface{}{
 		"nested": nbt.C{
 			"egg": nbt.C{
 				"name":  "Eggbert",
@@ -60,7 +60,7 @@ func main() {
 	// Open the file with the data
 	f, _ := os.Open("bigtest.nbt")
 	// Make an empty container
-	m := make(nbt.C)
+	m := make(map[string]interface{})
 
 	// Decode compressed file stream. Any reader that contains the NBT data works
 	err := nbt.DecodeCompressedStream(f, &m)

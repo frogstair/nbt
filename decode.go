@@ -15,13 +15,18 @@ var errSyntax = fmt.Errorf("invalid byte sequence")
 func DecodeBytes(data []byte, v interface{}) (err error) {
 	b := bufio.NewReader(bytes.NewBuffer(data))
 
-	m, ok := v.(*C)
-	if ok {
+	m, okc := v.(*C)
+	mpp, okm := v.(*map[string]interface{})
+	if okc {
 		var mp interface{}
 		_, mp, _, err = readNamedNext(b)
 		(*m) = mp.(C)
+	} else if okm {
+		var mp interface{}
+		_, mp, _, err = readNamedNext(b)
+		(*mpp) = mp.(C)
 	} else {
-		panic("Cannot decode struct, not implemented")
+		panic("Cannot decode to struct, not implemented")
 	}
 
 	return err
@@ -46,10 +51,15 @@ func DecodeStream(r io.Reader, v interface{}) error {
 
 	var err error
 	m, ok := v.(*C)
+	mpp, okm := v.(*map[string]interface{})
 	if ok {
 		var mp interface{}
 		_, mp, _, err = readNamedNext(b)
 		(*m) = mp.(C)
+	} else if okm {
+		var mp interface{}
+		_, mp, _, err = readNamedNext(b)
+		(*mpp) = mp.(C)
 	} else {
 		panic("Cannot decode struct, not implemented")
 	}

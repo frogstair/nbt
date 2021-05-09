@@ -12,9 +12,12 @@ import (
 func Encode(v interface{}, name string) []byte {
 	var b bytes.Buffer
 
-	m, ok := v.(C)
-	if ok {
-		writeMap(&b, m, name)
+	m, okc := v.(C)
+	mm, okm := v.(map[string]interface{})
+	if okc {
+		writeMap(&b, map[string]interface{}(m), name)
+	} else if okm {
+		writeMap(&b, mm, name)
 	} else {
 		panic("Cannot decode struct, not implemented")
 	}
@@ -27,9 +30,12 @@ func Encode(v interface{}, name string) []byte {
 func EncodeCompress(v interface{}, name string) []byte {
 	var b bytes.Buffer
 
-	m, ok := v.(C)
-	if ok {
-		writeMap(&b, m, name)
+	m, okc := v.(C)
+	mm, okm := v.(map[string]interface{})
+	if okc {
+		writeMap(&b, map[string]interface{}(m), name)
+	} else if okm {
+		writeMap(&b, mm, name)
 	} else {
 		panic("Cannot decode struct, not implemented")
 	}

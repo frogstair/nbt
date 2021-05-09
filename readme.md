@@ -13,12 +13,11 @@ For now it can only encode/decode tags whose root node is a **composite**, other
 - Fast
 - No external libraries
 - Very compact
+- A more compact wrapper to improve readability
 
 ## Precautions
 
 It is necessary to explicitly specify a type for each **numerical value** because of how NBT works.
-
-Only nbt.C works to convert maps to compund tags. A fix should come soon, however
 
 ## Example
 
@@ -37,25 +36,25 @@ import (
 func main() {
 
     // Sample data to work with
-    data := C{
-        "nested": C{
-            "egg": C{
+    data := map[string]interface{}{
+        "nested": nbt.C{
+            "egg": nbt.C{
                 "name":  "Eggbert",
                 "value": 0.5,
             },
-            "ham": C{
+            "ham": nbt.C{
                 "name":  "Hambert",
                 "value": 0.75,
             },
         },
-        "listTest (compound)": []C{
+        "listTest (compound)": []nbt.C{
             {
                 "createdOn": int64(1264099775885),
-                "name":      "Compound Tag #0",
+                "name":      "nbt.Compound Tag #0",
             },
             {
                 "createdOn": int64(1264099775885),
-                "name":      "Compound Tag #1",
+                "name":      "nbt.Compound Tag #1",
             },
         },
         "empty": []int64{},
@@ -85,7 +84,7 @@ func main() {
     // Open the file with the data
     f, _ := os.Open("bigtest.nbt")
     // Make an empty container
-    m := make(C)
+    m := make(map[string]interface{})
 
     // Decode compressed file stream. Any reader that contains the NBT data works
     err := nbt.DecodeCompressedStream(f, &m)
@@ -95,8 +94,9 @@ func main() {
 
     // Pretty print the map using JSON
     t, _ := json.MarshalIndent(m, "", "  ")
-    fmt.Print(string(t))
+    fmt.Print(string(t), "\n")
 }
+
 
 ```
 
