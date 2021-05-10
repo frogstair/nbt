@@ -17,7 +17,9 @@ For now it can only encode/decode tags whose root node is a **composite**, other
 
 ## Precautions
 
-It is necessary to explicitly specify a type for each **numerical value** because of how NBT works. If not specified, the smallest fitting type would be used, except floating point numbers, where the default `float64` is used
+It is necessary to explicitly specify a type for each **numerical value** because of how NBT works. If not specified, the smallest fitting type would be used, except floating point numbers, where the default `float64` is used.
+
+Since nbt uses **signed** bytes, it is necessary to not use `byte` in the map, cast it to `int8` instead.
 
 ## Example
 
