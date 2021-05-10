@@ -13,12 +13,16 @@ func Encode(v interface{}, name string) []byte {
 	var b bytes.Buffer
 
 	m, okc := v.(C)
-	mm, okm := v.(map[string]interface{})
+	var mm map[string]interface{}
 	if okc {
-		writeMap(&b, map[string]interface{}(m), name)
-	} else if okm {
-		writeMap(&b, mm, name)
+		mm = map[string]interface{}(m)
 	} else {
+		mm = v.(map[string]interface{})
+	}
+
+	writeMap(&b, mm, name)
+
+	if mm == nil {
 		panic("Cannot decode struct, not implemented")
 	}
 
@@ -31,12 +35,16 @@ func EncodeCompress(v interface{}, name string) []byte {
 	var b bytes.Buffer
 
 	m, okc := v.(C)
-	mm, okm := v.(map[string]interface{})
+	var mm map[string]interface{} = nil
 	if okc {
-		writeMap(&b, map[string]interface{}(m), name)
-	} else if okm {
-		writeMap(&b, mm, name)
+		mm = map[string]interface{}(m)
 	} else {
+		mm = v.(map[string]interface{})
+	}
+
+	writeMap(&b, mm, name)
+
+	if mm == nil {
 		panic("Cannot decode struct, not implemented")
 	}
 
@@ -48,7 +56,7 @@ func EncodeCompress(v interface{}, name string) []byte {
 	return bc.Bytes()
 }
 
-func writeMap(b *bytes.Buffer, v C, name string) error {
+func writeMap(b *bytes.Buffer, v map[string]interface{}, name string) error {
 
 	b.WriteByte(tagCompound)
 	if name == "" {
@@ -68,10 +76,10 @@ func writeMap(b *bytes.Buffer, v C, name string) error {
 	return nil
 }
 
-func writeByte(b *bytes.Buffer, s byte, name string) {
+func writeByte(b *bytes.Buffer, s int8, name string) {
 	b.WriteByte(tagByte)
 	writeName(b, name)
-	b.WriteByte(s)
+	binary.Write(b, binary.BigEndian, s)
 }
 
 func writeShort(b *bytes.Buffer, s int16, name string) {
@@ -104,7 +112,7 @@ func writeDouble(b *bytes.Buffer, s float64, name string) {
 	binary.Write(b, binary.BigEndian, s)
 }
 
-func writeByteArray(b *bytes.Buffer, s []byte, name string) {
+func writeByteArray(b *bytes.Buffer, s []int8, name string) {
 	b.WriteByte(tagByteArray)
 	writeName(b, name)
 
@@ -126,7 +134,7 @@ func writeList(b *bytes.Buffer, s []interface{}, name string) {
 		return
 	}
 
-	t := getType(s[0])
+	t, _ := getType(s[0])
 	b.WriteByte(t)
 
 	binary.Write(b, binary.BigEndian, int32(len(s)))
@@ -135,13 +143,19 @@ func writeList(b *bytes.Buffer, s []interface{}, name string) {
 		if t == tagString {
 			writeName(b, el.(string))
 		} else if t == tagByteArray {
-			e := el.([]byte)
+			e := el.([]int8)
 			l := len(e)
 			binary.Write(b, binary.BigEndian, int32(l))
 			binary.Write(b, binary.BigEndian, e)
 		} else if t == tagCompound {
-			e := el.(C)
-			for k, el := range e {
+			m, okc := el.(C)
+			var mm map[string]interface{}
+			if okc {
+				mm = map[string]interface{}(m)
+			} else {
+				mm = el.(map[string]interface{})
+			}
+			for k, el := range mm {
 				writeType(b, el, k)
 			}
 			b.WriteByte(tagEnd)
@@ -174,22 +188,38 @@ func writeName(b *bytes.Buffer, s string) error {
 }
 
 func writeType(b *bytes.Buffer, el interface{}, name string) error {
-	t := getType(el)
+	t, g := getType(el)
 	switch t {
 	case tagByte:
-		writeByte(b, el.(byte), name)
+		if g {
+			writeByte(b, int8(el.(int)), name)
+		} else {
+			writeByte(b, el.(int8), name)
+		}
 	case tagShort:
-		writeShort(b, el.(int16), name)
+		if g {
+			writeShort(b, int16(el.(int)), name)
+		} else {
+			writeShort(b, el.(int16), name)
+		}
 	case tagInt:
-		writeInt(b, el.(int32), name)
+		if g {
+			writeInt(b, int32(el.(int)), name)
+		} else {
+			writeInt(b, el.(int32), name)
+		}
 	case tagLong:
-		writeLong(b, el.(int64), name)
+		if g {
+			writeLong(b, int64(el.(int)), name)
+		} else {
+			writeLong(b, el.(int64), name)
+		}
 	case tagFloat:
 		writeFloat(b, el.(float32), name)
 	case tagDouble:
 		writeDouble(b, el.(float64), name)
 	case tagByteArray:
-		writeByteArray(b, el.([]byte), name)
+		writeByteArray(b, el.([]int8), name)
 	case tagString:
 		writeString(b, el.(string), name)
 	case tagList:
@@ -201,7 +231,14 @@ func writeType(b *bytes.Buffer, el interface{}, name string) error {
 		}
 		writeList(b, arr, name)
 	case tagCompound:
-		writeMap(b, el.(C), name)
+		m, okc := el.(C)
+		var mm map[string]interface{}
+		if okc {
+			mm = map[string]interface{}(m)
+		} else {
+			mm = el.(map[string]interface{})
+		}
+		writeMap(b, mm, name)
 	default:
 		return fmt.Errorf("invalid type supplied %T", el)
 	}

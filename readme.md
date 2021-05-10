@@ -17,7 +17,7 @@ For now it can only encode/decode tags whose root node is a **composite**, other
 
 ## Precautions
 
-It is necessary to explicitly specify a type for each **numerical value** because of how NBT works.
+It is necessary to explicitly specify a type for each **numerical value** because of how NBT works. If not specified, the smallest fitting type would be used, except floating point numbers, where the default `float64` is used
 
 ## Example
 
@@ -66,12 +66,16 @@ func main() {
             14,
             15,
         },
-        "byteTest":  byte(127),
-        "shortTest": int16(32767),
-        "intTest":   int32(2147483647),
-        "longTest":  int64(9223372036854775807),
+        "byteTest":   int8(127),
+        "shortTest":  int16(32767),
+        "intTest":    int32(2147483647),
+        "longTest":   int64(9223372036854775807),
+        "guessInt8":  42,
+        "guessInt16": 4242,
+        "guessInt32": 424242,
+        "guessInt64": 42424242424242,
         // Will be printed as base64 encoded because thats how JSON works
-        "byteArr": []byte{1, 2, 3, 4, 5},
+        "byteArr": []int8{1, 2, 3, 4, 5},
         // Support for unicode
         "stringTest": "HELLO WORLD THIS IS A TEST STRING! こんにちは世界〜",
     }

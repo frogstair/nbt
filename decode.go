@@ -12,6 +12,14 @@ import (
 
 var errSyntax = fmt.Errorf("invalid byte sequence")
 
+func generateError(t byte, name string, index int) error {
+	if index == -1 {
+		return fmt.Errorf("parsing error type=%d name=%q", t, name)
+	} else {
+		return fmt.Errorf("parsing error type=%d name=%q at index=%d", t, name, index)
+	}
+}
+
 func DecodeBytes(data []byte, v interface{}) (err error) {
 	b := bufio.NewReader(bytes.NewBuffer(data))
 
@@ -107,14 +115,14 @@ func readString(r *bufio.Reader) (string, error) {
 	b := make([]byte, length)
 	_, err = r.Read(b)
 	if err != nil {
-		return "", errSyntax
+		return "", err
 	}
 
 	s := string(b)
 	return s, nil
 }
 
-func readByte(r *bufio.Reader) (b byte, err error) {
+func readByte(r *bufio.Reader) (b int8, err error) {
 	err = binary.Read(r, binary.BigEndian, &b)
 	return
 }
@@ -144,13 +152,13 @@ func readDouble(r *bufio.Reader) (d float64, err error) {
 	return
 }
 
-func readByteArray(r *bufio.Reader) (b []byte, err error) {
+func readByteArray(r *bufio.Reader) (b []int8, err error) {
 	l, err := readInt(r)
 	if err != nil {
 		return
 	}
 
-	b = make([]byte, l)
+	b = make([]int8, l)
 	err = binary.Read(r, binary.BigEndian, &b)
 	return
 }
@@ -201,7 +209,7 @@ func readNamedNext(r *bufio.Reader) (name string, v interface{}, t byte, err err
 	return
 }
 
-func readUnnamedNext(r *bufio.Reader, t byte) (v interface{}, err error) {
+func readUnnamedNext(r *bufio.Reader, t byte, name ...string) (v interface{}, err error) {
 	switch t {
 	case tagByte:
 		v, err = readByte(r)
@@ -226,7 +234,11 @@ func readUnnamedNext(r *bufio.Reader, t byte) (v interface{}, err error) {
 	}
 
 	if err != nil {
-		err = errSyntax
+		if len(name) > 0 {
+			err = generateError(t, name[0], -1)
+		} else {
+			err = generateError(t, "", -1)
+		}
 	}
 
 	return
